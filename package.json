@@ -7,7 +7,7 @@
   "scripts": {
     "test": "npm run lint & npm run spec-all",
     "compile": "tsc",
-    "lint": "tslint 'src/**.ts'",
+    "lint": "tslint 'src/**/*.ts'",
     "spec": "tape --require 'ts-node/register'",
     "spec-all": "npm run spec 'src/**/*.spec.ts'",
     "coverage": "nyc --reporter text-summary --reporter lcov --include 'src/**/*.ts' --exclude 'src/**/*.spec.ts' --extension '.ts' npm run spec-all",

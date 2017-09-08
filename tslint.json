@@ -4,6 +4,15 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "interface-name": false,
+        "curly": false,
+        "one-line": [
+            "check-open-brace"
+        ],
+        "object-literal-sort-keys": [
+            "match-declaration-order"
+        ]
+    },
     "rulesDirectory": []
 }

@@ -1,6 +1,6 @@
 {
   "name": "promise-u",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "",
   "main": "./obj/index.bundle.js",
   "module": "./obj/index.js",

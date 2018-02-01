@@ -6,12 +6,12 @@
     "jsRules": {},
     "rules": {
         "interface-name": false,
+        "one-line": false,
+        "arrow-parens": false,
         "curly": false,
-        "one-line": [
-            "check-open-brace"
-        ],
         "object-literal-sort-keys": [
-            "match-declaration-order"
+            true,
+            "declaration-order"
         ]
     },
     "rulesDirectory": []

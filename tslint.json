@@ -9,10 +9,7 @@
         "one-line": false,
         "arrow-parens": false,
         "curly": false,
-        "object-literal-sort-keys": [
-            true,
-            "declaration-order"
-        ]
+        "object-literal-sort-keys": false
     },
     "rulesDirectory": []
 }

@@ -1,39 +1,47 @@
-import { delay } from "./delay";
+import { delay, randomBetween } from ".";
 
 export interface RetryConfig {
-    retryLimit: number;
-    intervalBase: number;
-    intervalIncrement: number;
+    retryLimit?: number;
+    intervalCap?: number;
+    intervalBase?: number;
 }
 
-export const defaultRetryConfig = Object.freeze<RetryConfig>({
-    retryLimit: 3,
-    intervalBase: 10 * 1000, // 10 seconds
-    intervalIncrement: 10 * 1000, // 10 seconds,
-});
+export const defaultRetryConfig = {
+    retryLimit: 10,
+    intervalCap: 5000,
+    intervalBase: 100,
+};
 
 export async function retry<T>(
     job: (attempt: number) => PromiseLike<T> | T,
-    config: Partial<RetryConfig> = {},
+    config: RetryConfig = {},
+    shouldTryAgain = (error: any) => true,
 ): Promise<T> {
     const {
-        retryLimit, intervalBase, intervalIncrement,
-     } = { ...defaultRetryConfig, ...config } as RetryConfig;
-
-    let lastError: any;
-
-    for (let attempt = 0; attempt < retryLimit; attempt++) {
+        retryLimit,
+        intervalBase,
+        intervalCap,
+    } = { ...defaultRetryConfig, ...config };
+    let retryAttempt = 0;
+    let intervalCurrent = intervalBase;
+    while (true) {
         try {
-            const result: T = await job(attempt);
+            const result = await job(retryAttempt);
             return result;
         }
-        catch (err) {
-            lastError = err;
-            await delay(
-                intervalBase + intervalIncrement * attempt,
-            );
+        catch (error) {
+            if (
+                retryAttempt < retryLimit &&
+                shouldTryAgain(error)
+            ) {
+                error = null;
+            }
+            if (error) throw error;
         }
-    }
+        // https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+        intervalCurrent = Math.min(intervalCap, randomBetween(intervalBase, intervalCurrent * 3));
+        await delay(intervalCurrent);
 
-    throw lastError;
+        retryAttempt++;
+    }
 }

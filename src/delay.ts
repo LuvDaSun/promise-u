@@ -5,11 +5,19 @@ export function delay(
     cancellation?: CancellationController,
 ) {
     return new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(resolve, ms);
-
-        if (cancellation) cancellation.addCancellationHandler(() => {
-            clearTimeout(timeout);
-            reject(cancellationRejection);
-        });
+        if (cancellation) {
+            const cancellationHandler = () => {
+                clearTimeout(timeout);
+                reject(cancellationRejection);
+            };
+            const timeout = setTimeout(() => {
+                cancellation.removeCancellationHandler(cancellationHandler);
+                resolve();
+            }, ms);
+            cancellation.addCancellationHandler(cancellationHandler);
+        }
+        else {
+            setTimeout(resolve, ms);
+        }
     });
 }

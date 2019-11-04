@@ -1,4 +1,4 @@
-import { delay, randomBetween } from ".";
+import { CancellationController, delay, randomBetween } from ".";
 
 export interface RetryConfig {
     retryLimit?: number;
@@ -16,6 +16,7 @@ export async function retry<T>(
     job: (attempt: number) => PromiseLike<T> | T,
     config: RetryConfig = {},
     shouldTryAgain = (error: any) => true,
+    cancellation?: CancellationController,
 ): Promise<T> {
     const {
         retryLimit,
@@ -31,6 +32,7 @@ export async function retry<T>(
         }
         catch (error) {
             if (
+                !(cancellation && cancellation.cancelled) &&
                 retryAttempt < retryLimit &&
                 shouldTryAgain(error)
             ) {
@@ -38,9 +40,10 @@ export async function retry<T>(
             }
             if (error) throw error;
         }
+
         // https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
         intervalCurrent = Math.min(intervalCap, randomBetween(intervalBase, intervalCurrent * 3));
-        await delay(intervalCurrent);
+        await delay(intervalCurrent, cancellation);
 
         retryAttempt++;
     }

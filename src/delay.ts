@@ -1,5 +1,15 @@
-export function delay(ms: number) {
-    return new Promise<void>(
-        (resolve) => setTimeout(resolve, ms),
-    );
+import { CancellationController, cancellationRejection } from "./cancellation";
+
+export function delay(
+    ms: number,
+    cancellation?: CancellationController,
+) {
+    return new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(resolve, ms);
+
+        if (cancellation) cancellation.addCancellationHandler(() => {
+            clearTimeout(timeout);
+            reject(cancellationRejection);
+        });
+    });
 }

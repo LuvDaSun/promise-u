@@ -1,23 +1,23 @@
-import { CancellationController, cancellationRejection } from "./cancellation";
+import { defer } from "./defer";
 
-export function delay(
+export async function delay(
     ms: number,
-    cancellation?: CancellationController,
-) {
-    return new Promise<void>((resolve, reject) => {
-        if (cancellation) {
-            const cancellationHandler = () => {
-                clearTimeout(timeout);
-                reject(cancellationRejection);
-            };
-            const timeout = setTimeout(() => {
-                cancellation.removeCancellationHandler(cancellationHandler);
-                resolve();
-            }, ms);
-            cancellation.addCancellationHandler(cancellationHandler);
+    control?: Promise<unknown>,
+): Promise<void> {
+    const deferred = defer();
+    const timeout = setTimeout(() => deferred.resolve(), ms);
+    if (control) {
+        try {
+            await Promise.race([
+                deferred.promise,
+                control,
+            ]);
         }
-        else {
-            setTimeout(resolve, ms);
+        finally {
+            clearTimeout(timeout);
         }
-    });
+    }
+    else {
+        await deferred.promise;
+    }
 }

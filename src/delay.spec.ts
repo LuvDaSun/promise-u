@@ -1,10 +1,10 @@
 import * as test from "blue-tape";
-import { CancellationController, CancellationRejection as CancellationError } from "./cancellation";
+import { CancelError, cancellable } from "./cancellable";
 import { delay } from "./delay";
 
 test("should cancel delay", async (t) => {
-    const cancellation = new CancellationController();
-    const p = delay(1000, cancellation);
+    const cancellation = cancellable();
+    const p = delay(1000, cancellation.promise);
     cancellation.cancel();
 
     try {
@@ -12,6 +12,6 @@ test("should cancel delay", async (t) => {
         t.fail("should error");
     }
     catch (error) {
-        t.ok(error instanceof CancellationError);
+        t.ok(error instanceof CancelError);
     }
 });

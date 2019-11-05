@@ -1,5 +1,5 @@
 import { delay, randomBetween } from ".";
-import { CancelError } from './cancellable';
+import { CancelError } from "./cancellable";
 
 export interface RetryConfig {
     retryLimit?: number;

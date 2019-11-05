@@ -1,4 +1,5 @@
 import { delay, randomBetween } from ".";
+import { CancelError } from './cancellable';
 
 export interface RetryConfig {
     retryLimit?: number;
@@ -16,7 +17,7 @@ export async function retry<T>(
     job: (attempt: number) => PromiseLike<T> | T,
     config: RetryConfig = {},
     shouldTryAgain = (error: any) => true,
-    control?: Promise<unknown>,
+    control?: Promise<void>,
 ): Promise<T> {
     const {
         retryLimit,
@@ -27,11 +28,20 @@ export async function retry<T>(
     let intervalCurrent = intervalBase;
     while (true) {
         try {
-            const result = await job(retryAttempt);
-            return result;
+            const jobPromise = job(retryAttempt);
+            if (control) {
+                return await Promise.race([
+                    jobPromise,
+                    control,
+                ]) as T;
+            }
+            else {
+                return await jobPromise;
+            }
         }
         catch (error) {
             if (
+                !(error instanceof CancelError) &&
                 retryAttempt < retryLimit &&
                 shouldTryAgain(error)
             ) {

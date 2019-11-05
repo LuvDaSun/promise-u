@@ -16,6 +16,7 @@ export async function retry<T>(
     job: (attempt: number) => PromiseLike<T> | T,
     config: RetryConfig = {},
     shouldTryAgain = (error: any) => true,
+    control?: Promise<unknown>,
 ): Promise<T> {
     const {
         retryLimit,
@@ -38,9 +39,10 @@ export async function retry<T>(
             }
             if (error) throw error;
         }
+
         // https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
         intervalCurrent = Math.min(intervalCap, randomBetween(intervalBase, intervalCurrent * 3));
-        await delay(intervalCurrent);
+        await delay(intervalCurrent, control);
 
         retryAttempt++;
     }

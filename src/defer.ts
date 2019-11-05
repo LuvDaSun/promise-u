@@ -1,7 +1,7 @@
 export interface Deferred<T> {
     promise: Promise<T>;
-    resolve: (value: T) => void;
-    reject: (reason: any) => void;
+    resolve: (value?: T | PromiseLike<T>) => void;
+    reject: (reason?: any) => void;
 }
 
 export function defer<T = any>(): Deferred<T> {

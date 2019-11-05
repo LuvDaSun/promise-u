@@ -10,7 +10,11 @@ test("does not retry when told not to", async (t) => {
         }
     },
         {},
-        _ => (triesLeft-- > 0),
+        error => {
+            if (triesLeft-- <= 0) {
+                throw error;
+            }
+        },
     );
 
     t.doesNotThrow(retryLogic, "did not retry when no tries were left");
@@ -22,7 +26,7 @@ test("forwards error to caller", async (t) => {
             throw new Error("InnerError");
         },
             {},
-            _ => false,
+            error => { throw error; },
         );
     } catch (err) {
         t.equal(err.message, "InnerError", "error messages match");
